@@ -1,0 +1,12 @@
+{
+  "name": "builder-tools-quest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A 2-minute pixel-art explainer about Amazon Devices Builder Tools, drawn and scored entirely in code.",
+  "scripts": {
+    "audio": "python3 audio.py",
+    "render": "python3 audio.py && python3 render.py && ./mux.sh vertical",
+    "render:wide": "python3 audio.py && python3 wide_render.py && ./mux.sh wide",
+    "sheet": "python3 snap.py --sheet"
+  }
+}

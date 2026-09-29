@@ -1,0 +1,4 @@
+playwright>=1.40
+numpy>=1.26
+scipy>=1.11
+pillow>=10
