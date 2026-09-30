@@ -7,6 +7,7 @@
     "audio": "python3 audio.py",
     "render": "python3 audio.py && python3 render.py && ./mux.sh vertical",
     "render:wide": "python3 audio.py && python3 wide_render.py && ./mux.sh wide",
-    "sheet": "python3 snap.py --sheet"
+    "sheet": "python3 snap.py --sheet",
+    "live": "node live/server.js"
   }
 }

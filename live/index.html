@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Ask Byte · live ADBT</title><style>
+@font-face{font-family:"Pixelify Sans";font-weight:600;src:url(../fonts/pixelify-sans-latin-600-normal.woff2)}
+@font-face{font-family:"Pixelify Sans";font-weight:700;src:url(../fonts/pixelify-sans-latin-700-normal.woff2)}
+@font-face{font-family:"Press Start 2P";font-weight:400;src:url(../fonts/press-start-2p-latin-400-normal.woff2)}
+@font-face{font-family:"JetBrains Mono";font-weight:700;src:url(../fonts/jetbrains-mono-latin-700-normal.woff2)}
+html,body{margin:0;background:#082e1f;color:#f1eed8;font:600 18px "Pixelify Sans",monospace;height:100%}
+body{display:flex;flex-direction:column;align-items:center}
+canvas{display:block;width:min(100vw,calc((100vh - 92px) * 16 / 9));height:auto;background:#000}
+form{display:flex;gap:10px;align-items:center;width:min(100vw,calc((100vh - 92px) * 16 / 9));box-sizing:border-box;padding:12px 16px;background:#121515;border-top:4px solid #d4ce46}
+textarea{flex:1;height:52px;resize:none;background:#082e1f;color:#f1eed8;border:3px solid #4aba91;font:700 18px "JetBrains Mono",monospace;padding:6px 10px}
+button,select{background:#0e5135;color:#ebe79a;border:3px solid #d4ce46;font:700 18px "Pixelify Sans",monospace;padding:8px 14px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+label{display:flex;gap:6px;align-items:center;white-space:nowrap}
+</style></head><body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<form id="f">
+  <select id="platform" title="Target platform"><option value="vega">Vega</option><option value="fireos">Fire OS</option><option value="both">Both</option></select>
+  <textarea id="prompt" placeholder="Ask Claude a Fire TV question… (Enter to send, Shift+Enter for a new line)">How do I add D-pad focus navigation to a Vega app?</textarea>
+  <button id="ask">Ask</button>
+  <label title="Chiptune sound effects"><input type="checkbox" id="sound" checked> Sound</label>
+  <label title="Record the canvas to a .webm while the answer plays"><input type="checkbox" id="rec"> Rec</label>
+  <select id="replay" title="Replay a saved session"><option value="">Replay…</option></select>
+</form>
+<script src="../kit.js"></script>
+<script src="sfx.js"></script>
+<script src="live.js"></script>
+</body></html>

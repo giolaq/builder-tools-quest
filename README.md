@@ -70,6 +70,23 @@ Every frame is a pure function of time, so any frame can be rendered on its own 
 
 Timing uses a beat grid: `K.at(bar, beat)` turns a storyboard cue like `42.3` (bar 42, beat 3) into seconds. `STORYBOARD.md` has every chapter's cues, captions, facts and sources. `STYLE.md` has the palette, type sizes and layout rules. `CHAPTER_BRIEF.md` is the brief each chapter was built from.
 
+## Live mode: ask Byte anything
+
+`live/` turns the film's world into an interactive 16:9 scene. Type a prompt, and a local server runs headless Claude Code wired to **only** the Amazon Devices Builder Tools MCP (ADBT). The scene shows your prompt, every ADBT tool call with its arguments, what ADBT sent back, and Claude's answer as it streams in.
+
+```bash
+npm run live          # then open http://localhost:4173/live/
+```
+
+- **Scrolling:** wheel/trackpad or drag (mouse or touch) over the **ADBT MCP** call list, the *ADBT returned* preview or the **CLAUDE + ADBT** answer. Click a call to see what ADBT returned for it. Scroll the answer back to the bottom to follow new text again.
+- **Platform** picks the `device_os` passed to ADBT (Vega, Fire OS or both).
+- **Sound** toggles chiptune sound effects, synthesised in the browser (`live/sfx.js`) with the same pulse, triangle and noise recipes as `audio.py`: a chirp when Byte opens ADBT, a beam for each search, a page-flip for each document read, a jingle when ADBT answers, typewriter ticks and a fanfare when the answer is done.
+- **Rec** records the canvas and the sound effects to a `.webm` from the moment you ask until 4 s after the answer. Convert with `ffmpeg -i ask-byte-*.webm -c:v libx264 -pix_fmt yuv420p out.mp4`.
+- **Replay** re-plays a saved run (`out/live/*.json`) with long waits squeezed, so you can record a clean take without asking again.
+- Needs the `claude` CLI logged in, plus `npx` to start the MCP. Set `LIVE_MODEL` to pick a model, `PORT` to change the port, `CLAUDE_BIN` to point at another `claude` binary.
+
+The server listens on `127.0.0.1` only. Claude gets no built-in tools (no shell, no file access), just the ADBT MCP tools.
+
 ## Facts and simplifications
 
 The storyboard lists the sources and what the film simplifies. In short:
