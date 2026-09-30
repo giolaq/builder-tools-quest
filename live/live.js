@@ -69,6 +69,16 @@
   const trunc = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
   const ROWS = 3, HIT = {}; // hit areas of the scrollable regions, refreshed every frame
   const pickedCall = calls => calls.find(k => k.id === S.pick && k.tRes) || [...calls].reverse().find(k => k.tRes);
+  function micIcon(cx, cy, t, live) { // pixel microphone, 6px grid, sound waves while listening
+    const u = 6, R = (x, y, w, h, col) => { c.fillStyle = col; c.fillRect(cx + x * u, cy + y * u, w * u, h * u); };
+    const col = live ? P.gold : P.mintL;
+    R(-2, -4, 4, 1, P.ink); R(-2, -4, 4, 5, col); R(-2, -4, 1, 5, live ? P.goldL : P.paper);   // capsule
+    R(-1, -3, 2, 1, P.ink); R(-1, -1, 2, 1, P.ink);                                             // grille
+    R(-3, 0, 1, 2, col); R(2, 0, 1, 2, col); R(-2, 2, 4, 1, col); R(0, 3, 1, 1, col); R(-1, 4, 3, 1, col); // cradle + stand
+    if (live) for (let i = 1; i <= 2; i++) if (Math.floor(t * 4) % 3 >= i - 1) {
+      R(-3 - i * 2, -3, 1, 4, P.mint); R(3 + i * 2 - 1, -3, 1, 4, P.mint);
+    }
+  }
   function scrollBar(x, y, h, off, room, frac) {
     const bh = Math.max(32, Math.round(h * Math.min(1, frac))), by = y + Math.round((h - bh) * (off / room));
     c.fillStyle = P.stoneD; c.fillRect(x, y, 8, h); c.fillStyle = P.mint; c.fillRect(x, by, 8, bh);
@@ -113,7 +123,8 @@
     // Gio
     const since = t - S.t0, doneAgo = S.done ? t - S.done.t : -1;
     let pose = 'idle', expr = 'happy';
-    if (S.prompt && since < 1.4) { pose = 'point'; expr = 'grin'; }
+    if (VOICE && !VOICE.error) { pose = 'wave'; expr = 'wow'; }
+    else if (S.prompt && since < 1.4) { pose = 'point'; expr = 'grin'; }
     else if (S.error) expr = 'worried';
     else if (doneAgo >= 0 && doneAgo < 1.6) { pose = 'cheer'; expr = 'grin'; }
     else if (busy && pend) expr = 'wow';
@@ -133,9 +144,23 @@
   }
   function promptPanel(t) {
     const b = BOX_PROMPT; K.box(c, b.x, b.y, b.w, b.h, { fill: P.forestD });
-    header(b, 'YOU', S.prompt ? 'to Claude' : '');
     const inner = { x: b.x + 30, y: b.y + 96, w: b.w - 60, h: b.h - 170 };
-    if (!S.prompt) { drawLines(layout('Type a Fire TV question below and press **Ask**. Claude answers with the Amazon Devices Builder Tools MCP.', inner.w, 32), inner, 32, 44, 0); return; }
+    if (VOICE) { // live transcript while an attendee speaks
+      header(b, 'YOU', VOICE.error ? 'mic error' : 'listening…');
+      const said = (VOICE.final + ' ' + VOICE.interim).trim();
+      const msg = VOICE.error || said || 'Ask your Fire TV question out loud…';
+      const lines = layout(msg, inner.w, 34), hgt = lines.reduce((a, l) => a + l.h * 46, 0);
+      c.save(); if (!said) c.globalAlpha = 0.6; drawLines(lines, inner, 34, 46, Math.max(0, hgt - inner.h)); c.restore();
+      micIcon(b.x + 76, b.y + b.h - 52, t, !VOICE.error);
+      K.text(c, VOICE.error ? 'Tap the mic to retry' : 'Pause to send · Esc to cancel', b.x + 136, b.y + b.h - 44, { font: K.F.px(28), color: VOICE.error ? P.red : P.mintL, align: 'left', shadow: false });
+      return;
+    }
+    header(b, 'YOU', S.prompt ? 'to Claude' : '');
+    if (!S.prompt) {
+      drawLines(layout('Type a Fire TV question below, or press the **mic** and ask it out loud. Claude answers with the Amazon Devices Builder Tools MCP.', inner.w, 32), inner, 32, 44, 0);
+      if (VOICE_OK) micIcon(b.x + 76, b.y + b.h - 52, t, false);
+      return;
+    }
     const vis = K.type(S.prompt, t, S.t0, 70);
     const lines = layout(vis, inner.w, 34), hgt = lines.reduce((a, l) => a + l.h * 46, 0);
     drawLines(lines, inner, 34, 46, Math.max(0, hgt - inner.h));
@@ -295,6 +320,40 @@
 
   // ---------- asking + replay ----------
   const $ = id => document.getElementById(id);
+
+  // ---------- voice: Web Speech API -> text -> ask ----------
+  const Speech = window.SpeechRecognition || window.webkitSpeechRecognition, VOICE_OK = !!Speech;
+  let VOICE = null, speech = null;
+  function listen() {
+    if (!VOICE_OK) return;
+    if (speech) { speech.stop(); return; }              // second tap: send what we have
+    SFX.init(); SFX.play('chirp');
+    VOICE = { final: '', interim: '', error: null, cancel: false, before: $('prompt').value };
+    speech = new Speech(); speech.lang = $('lang').value; speech.interimResults = true; speech.continuous = false;
+    speech.onresult = e => {
+      let fin = '', mid = '';
+      for (const r of e.results) (r.isFinal ? (fin += r[0].transcript) : (mid += r[0].transcript));
+      VOICE.final = fin.trim(); VOICE.interim = mid.trim(); $('prompt').value = (VOICE.final + ' ' + VOICE.interim).trim();
+    };
+    speech.onerror = e => {
+      if (e.error === 'aborted') return;
+      VOICE.error = { 'not-allowed': 'Microphone access was blocked. Allow it in the browser and try again.', 'no-speech': "Didn't hear anything.", 'network': 'Speech service unreachable (check the network).' }[e.error] || `Speech error: ${e.error}`;
+    };
+    speech.onend = () => {
+      const v = VOICE, q = v ? (v.final + ' ' + v.interim).trim() : ''; speech = null; $('mic').classList.remove('on');
+      if (v && v.error) { SFX.play('sad'); setTimeout(() => { if (VOICE === v) VOICE = null; }, 3500); return; }
+      VOICE = null;
+      if (v && !v.cancel && q) { $('prompt').value = q; ask(q, $('platform').value); }
+    };
+    $('mic').classList.add('on'); speech.start();
+  }
+  function cancelListen() { if (speech && VOICE) { VOICE.cancel = true; $('prompt').value = VOICE.before; speech.abort(); VOICE = null; } }
+  if (!VOICE_OK) { $('mic').disabled = true; $('mic').title = 'Voice input needs Chrome, Edge or Safari'; }
+  $('mic').addEventListener('click', listen);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') cancelListen();
+    else if ((e.key === 'm' || e.key === 'M') && !/TEXTAREA|INPUT|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); listen(); }
+  });
   let ctrl = null, timers = [];
   function busy(b) { $('ask').textContent = b ? 'Stop' : 'Ask'; $('ask').dataset.busy = b ? '1' : ''; }
   function reset(prompt) { if (ctrl) ctrl.abort(); timers.forEach(clearTimeout); timers = []; if (rec) { clearTimeout(stopTimer); rec.stop(); } S = fresh(prompt); }
@@ -330,6 +389,9 @@
     e.preventDefault();
     if ($('ask').dataset.busy) { reset(S.prompt); busy(false); return; }
     const q = $('prompt').value.trim(); if (q) ask(q, $('platform').value);
+  });
+  $('preset').addEventListener('change', e => { // fill the prompt; edit it or press Enter to ask
+    if (!e.target.value) return; $('prompt').value = e.target.value; e.target.value = ''; $('prompt').focus();
   });
   $('sound').addEventListener('change', e => { SFX.enabled = e.target.checked; });
   $('prompt').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('f').requestSubmit(); } });

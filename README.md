@@ -79,6 +79,8 @@ npm run live          # then open http://localhost:4173/live/
 ```
 
 - **Scrolling:** wheel/trackpad or drag (mouse or touch) over the **ADBT MCP** call list, the *ADBT returned* preview or the **CLAUDE + ADBT** answer. Click a call to see what ADBT returned for it. Scroll the answer back to the bottom to follow new text again.
+- **Voice:** press the 🎤 button (or `M`), ask out loud, and pause: the words appear live in the YOU panel and the question is sent when you stop talking. Tap the mic again to send right away, `Esc` to cancel. The language picker next to it sets the speech language. It uses the browser's Web Speech API (Chrome, Edge or Safari); Chrome sends the audio to Google's speech service, so it needs a network connection.
+- **Presets** fills the prompt box with a ready-made question (quick ones and more involved ones). Edit it or press Enter to ask.
 - **Platform** picks the `device_os` passed to ADBT (Vega, Fire OS or both).
 - **Sound** toggles chiptune sound effects, synthesised in the browser (`live/sfx.js`) with the same pulse, triangle and noise recipes as `audio.py`: a chirp when Byte opens ADBT, a beam for each search, a page-flip for each document read, a jingle when ADBT answers, typewriter ticks and a fanfare when the answer is done.
 - **Rec** records the canvas and the sound effects to a `.webm` from the moment you ask until 4 s after the answer. Convert with `ffmpeg -i ask-byte-*.webm -c:v libx264 -pix_fmt yuv420p out.mp4`.

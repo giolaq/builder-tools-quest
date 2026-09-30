@@ -8,14 +8,20 @@ body{display:flex;flex-direction:column;align-items:center}
 canvas{display:block;width:min(100vw,calc((100vh - 92px) * 16 / 9));height:auto;background:#000}
 form{display:flex;gap:10px;align-items:center;width:min(100vw,calc((100vh - 92px) * 16 / 9));box-sizing:border-box;padding:12px 16px;background:#121515;border-top:4px solid #d4ce46}
 textarea{flex:1;height:52px;resize:none;background:#082e1f;color:#f1eed8;border:3px solid #4aba91;font:700 18px "JetBrains Mono",monospace;padding:6px 10px}
-button,select{background:#0e5135;color:#ebe79a;border:3px solid #d4ce46;font:700 18px "Pixelify Sans",monospace;padding:8px 14px;cursor:pointer}
+button,select{max-width:180px;background:#0e5135;color:#ebe79a;border:3px solid #d4ce46;font:700 18px "Pixelify Sans",monospace;padding:8px 14px;cursor:pointer}
 button:disabled{opacity:.4;cursor:default}
+#mic{padding:6px 10px;line-height:0}#mic svg{width:30px;height:30px;shape-rendering:crispEdges}
+#mic.on{background:#d4ce46;animation:blink .5s steps(2) infinite}#mic.on svg rect{fill:#121515}
+@keyframes blink{50%{border-color:#4aba91}}
 label{display:flex;gap:6px;align-items:center;white-space:nowrap}
 </style></head><body>
 <canvas id="c" width="1920" height="1080"></canvas>
 <form id="f">
   <select id="platform" title="Target platform"><option value="vega">Vega</option><option value="fireos">Fire OS</option><option value="both">Both</option></select>
+  <select id="preset" title="Preset prompts"><option value="">Presets…</option><optgroup label="Quick"><option value="Help me validate my manifest file">Help me validate my manifest file</option><option value="Build and run my app on Virtual device">Build and run my app on Virtual device</option><option value="Run KPI Visualizer and get performance results">Run KPI Visualizer and get performance results</option><option value="Can you create an app with 2 buttons to show case focus management">Can you create an app with 2 buttons to show case focus management</option><option value="Can you help me implement Carousel">Can you help me implement Carousel</option><option value="Help me analyze if this component is following React Native Vega performance best practices">Help me analyze if this component is following React Native Vega performance best practices</option></optgroup><optgroup label="More involved"><option value="Can you help me minimize unnecessary re-renders in my app">Can you help me minimize unnecessary re-renders in my app</option><option value="Help me analyze this ACR file /path/to/crash.acr">Help me analyze this ACR file /path/to/crash.acr</option><option value="My button clicks feel laggy, can you help">My button clicks feel laggy, can you help</option><option value="My app&#39;s UI fluidity score is low, help me diagnose it">My app&#39;s UI fluidity score is low, help me diagnose it</option><option value="Convert my FOS WebView app to a Vega Web App">Convert my FOS WebView app to a Vega Web App</option></optgroup></select>
   <textarea id="prompt" placeholder="Ask Claude a Fire TV question… (Enter to send, Shift+Enter for a new line)">How do I add D-pad focus navigation to a Vega app?</textarea>
+  <button type="button" id="mic" title="Ask with your voice (M)"><svg viewBox="0 0 10 10"><rect x="3" y="0" width="4" height="6" fill="#ebe79a"/><rect x="2" y="4" width="1" height="2" fill="#ebe79a"/><rect x="7" y="4" width="1" height="2" fill="#ebe79a"/><rect x="3" y="6" width="4" height="1" fill="#ebe79a"/><rect x="4.5" y="7" width="1" height="2" fill="#ebe79a"/><rect x="3" y="9" width="4" height="1" fill="#ebe79a"/></svg></button>
+  <select id="lang" title="Speech language"><option value="en-US">EN</option><option value="it-IT">IT</option><option value="de-DE">DE</option><option value="fr-FR">FR</option><option value="es-ES">ES</option></select>
   <button id="ask">Ask</button>
   <label title="Chiptune sound effects"><input type="checkbox" id="sound" checked> Sound</label>
   <label title="Record the canvas to a .webm while the answer plays"><input type="checkbox" id="rec"> Rec</label>
